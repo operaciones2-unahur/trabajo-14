@@ -12,19 +12,16 @@ push que cambie la infraestructura dispara ese análisis automáticamente.
 - Docker instalado y corriendo.
 - `guia-06/` y `guia-08/` a `guia-12/`: las guías anteriores, cada una en
   su propia carpeta, tal como las armaste en TP06 a TP12.
-- `devops-TP06/`: la carpeta de TP06 **más** TP07. Se llama así, y no
-  "guia-07", porque el Word de TP07 nunca crea una carpeta nueva — dice
-  literalmente "vamos a trabajar sobre el repo del TP06" y sigue
-  agregando cosas ahí (tests, pipeline). El Word del TP14 asume que tu
-  proyecto se llama así: lo vas a ver escrito `~/devops-TP06` en varias
-  partes de la consigna.
-- El pipeline de CI/CD real (`.github/workflows/cicd.yml`, con los jobs
+- `devops-TP06/`: tu proyecto de TP06 con el pipeline de CI/CD que le
+  agregaste en TP07 (por eso se llama así, en vez de "guia-07": TP07 se
+  trabaja sobre la misma carpeta de TP06, no arma una carpeta nueva).
+- El pipeline de CI/CD (`.github/workflows/cicd.yml`, con los jobs
   `lint`, `test` y `build-push` — `deploy` está comentado porque no hay
-  un servidor real donde desplegar, tal como lo permite el Word) — el
-  mismo que el Word de TP14 pide modificar — está en la **raíz de esta
-  carpeta** (`guia-14-para-alumnos/.github/`), no adentro de
-  `devops-TP06/`. GitHub Actions sólo reconoce `.github/workflows/` si
-  está en la raíz del repositorio, así que quedó ahí arriba a propósito.
+  un servidor real donde desplegar) es el que vas a modificar en este
+  TP, y está en la **raíz de esta carpeta**
+  (`guia-14-para-alumnos/.github/`), no adentro de `devops-TP06/`:
+  GitHub Actions sólo reconoce `.github/workflows/` si está en la raíz
+  del repositorio.
 
 Primero entrá a `devops-TP06/` — ahí vas a hacer los Pasos 1 a 4:
 
@@ -469,16 +466,14 @@ risk_tracking: {}
 
 Guardá con `Ctrl+O`, `Enter`, salí con `Ctrl+X`.
 
-Un detalle antes de seguir: la herramienta real de Threagile (motor 1.0.0)
-no usa exactamente los mismos nombres que el ejemplo del Word. El campo se
-llama `communication_links` (no `data_flows`), la exposición a internet es
-`internet` (no `internet_exposed`), y los valores de `technology` son
-`browser`, `web-service-rest` y `database` en vez de `web-browser`,
-`web-service-wsgi` y `database-postgresql`. Los `id` tampoco aceptan guion
-bajo, sólo letras, números y guion medio (por eso `cliente-web` y no
-`cliente_web`). El bloque de arriba ya tiene todo esto corregido — la
-arquitectura, las descripciones y las relaciones son las mismas que pide
-el Word, sólo cambian los nombres de campo para que el archivo compile.
+Un par de convenciones a tener en cuenta para que el archivo compile con
+Threagile (motor 1.0.0): la conexión entre dos activos se declara con
+`communication_links`, la exposición a internet es el campo `internet`, y
+los valores de `technology` para el cliente, el backend y la base de
+datos son `browser`, `web-service-rest` y `database`. Los `id` sólo
+aceptan letras, números y guion medio, sin guion bajo — por eso
+`cliente-web` y no `cliente_web`. El bloque de arriba ya está escrito
+así.
 
 ### Qué representa cada activo
 
@@ -545,13 +540,10 @@ dos identificadores:
 - `unencrypted-communication@backend>conexion-base-datos@backend@postgres`
 - `unchecked-deployment@docker-registry`
 
-El TP14 pide trackear tres decisiones de seguridad:
-`unencrypted-communication`, `unencrypted-database-client` y
-`push-to-public-registry`. En el catálogo real de reglas de Threagile no
-existen categorías separadas para las dos últimas: el riesgo que
-corresponde a "conexión de base de datos sin cifrar" es el mismo
-`unencrypted-communication` de arriba (es la conexión backend→postgres), y
-el que corresponde a "push a un registro público" es
+Vamos a trackear estas dos decisiones de seguridad, usando los
+identificadores reales que acabás de encontrar: la conexión de base de
+datos sin cifrar se registra sobre `unencrypted-communication` de arriba
+(es la conexión backend→postgres), y el push a un registro público sobre
 `unchecked-deployment@docker-registry`.
 
 Volvé a abrir el archivo (`nano threagile.yaml`) y reemplazá la línea
@@ -559,7 +551,7 @@ Volvé a abrir el archivo (`nano threagile.yaml`) y reemplazá la línea
 
 ```yaml
 risk_tracking:
-  # "unencrypted-database-client" del TP14: riesgo aceptado.
+  # Riesgo aceptado: conexión de base de datos sin cifrar.
   unencrypted-communication@backend>conexion-base-datos@backend@postgres:
     status: accepted
     justification: >-
@@ -570,7 +562,7 @@ risk_tracking:
     date: 2026-08-30
     checked_by: Equipo DevOps
 
-  # "push-to-public-registry" del TP14: riesgo mitigado.
+  # Riesgo mitigado: push a un registro público.
   unchecked-deployment@docker-registry:
     status: mitigated
     justification: >-
@@ -582,16 +574,16 @@ risk_tracking:
     checked_by: Equipo DevOps
 ```
 
-La tercera decisión del Word — mitigar `unencrypted-communication` en
-general gracias al Ingress con TLS de TP10 — no genera una segunda entrada
-de `risk_tracking` en este modelo concreto: el único tramo real de esa
-categoría es el de backend→postgres, ya trackeado arriba. El tramo
-cliente→nginx no cuenta como `unencrypted-communication` porque el cliente
-es `external-entity`, y el tramo nginx→backend cae bajo otra categoría
-(`missing-authentication`). La mitigación por TLS del Ingress sigue siendo
-válida a nivel de arquitectura, sólo que no tiene una fila propia en
-`risk_tracking` para no inventar un ID que Threagile reportaría como
-huérfano.
+Hay una tercera decisión de seguridad: el cifrado del tráfico en general
+queda mitigado por el Ingress con TLS de TP10. Esa decisión no genera una
+entrada propia de `risk_tracking` en este modelo: el único tramo real de
+la categoría `unencrypted-communication` es backend→postgres, ya
+trackeado arriba. El tramo cliente→nginx no entra en esa categoría porque
+el cliente es `external-entity`, y el tramo nginx→backend cae bajo otra
+categoría (`missing-authentication`). La mitigación por TLS del Ingress
+sigue siendo válida a nivel de arquitectura; simplemente no le corresponde
+una fila propia en `risk_tracking`, para no inventar un ID que Threagile
+reportaría como huérfano.
 
 Guardá y volvé a correr el comando del paso 4. Esta vez no debería aparecer
 ningún aviso de `Risk tracking references unknown risk`.
@@ -621,9 +613,9 @@ repo), no en `devops-TP06/`.
 
 No borres nada de lo que ya está — los jobs `lint`, `test` y `build-push`
 se mantienen igual (`deploy` está comentado porque no hay un servidor
-real donde desplegar; el propio Word lo permite: "para testear sin un
-servidor real, podés comentar el job deploy"). Andá hasta el final del
-archivo, al mismo nivel de indentación que esos jobs, y pegá:
+real donde desplegar; si en algún momento tenés uno, lo descomentás y
+cargás los secrets que pide). Andá hasta el final del archivo, al mismo
+nivel de indentación que esos jobs, y pegá:
 
 ```yaml
   threat-modeling:
