@@ -24,7 +24,7 @@ contenedores manejados como código, en tres módulos (`network`, `storage`,
 
 ## Uso
 
-Ejecutar en bash
+```bash
 # Copiar y editar variables
 cp terraform.tfvars.example terraform.tfvars
 
@@ -39,17 +39,26 @@ terraform output
 
 # Destruir
 terraform destroy
-Multi-entorno
+```
+
+### Multi-entorno
+
+```bash
 # Desarrollo (defaults)
 terraform apply
 
 # Producción
 terraform apply -var-file=envs/prod/terraform.tfvars
-Estructura de módulos
+```
+
+### Estructura de módulos
+
+```
 modules/
 ├── network/   → redes Docker con subnets dedicadas
 ├── storage/   → volúmenes persistentes con labels
 └── app/       → contenedores con healthchecks y dependencias
+```
 
 ## Notas
 

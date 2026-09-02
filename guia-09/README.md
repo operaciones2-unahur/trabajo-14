@@ -23,10 +23,12 @@ el pull).
 
 ## Arquitectura
 
-Namespace: devops-portfolio 
-├── Deployment: postgres (1 réplica) ← ClusterIP :5432 
-├── Deployment: backend (2 réplicas) ← ClusterIP :5000 
+```
+Namespace: devops-portfolio
+├── Deployment: postgres (1 réplica) ← ClusterIP :5432
+├── Deployment: backend (2 réplicas) ← ClusterIP :5000
 └── Deployment: frontend (2 réplicas) ← NodePort :30080
+```
 
 ## Recursos Kubernetes usados
 
@@ -46,12 +48,20 @@ Namespace: devops-portfolio
 
 ## Deploy
 
-Ejecutar en bash
+```bash
 bash scripts/deploy.sh
-Verificar
+```
+
+### Verificar
+
+```bash
 bash scripts/verificar.sh
 kubectl get all -n devops-portfolio
-Comandos útiles
+```
+
+### Comandos útiles
+
+```bash
 # Escalar backend a 3 réplicas
 kubectl scale deployment backend --replicas=3 -n devops-portfolio
 
@@ -63,6 +73,7 @@ kubectl exec -it <pod-name> -n devops-portfolio -- /bin/bash
 
 # Rollback
 kubectl rollout undo deployment/backend -n devops-portfolio
+```
 
 ## Notas
 

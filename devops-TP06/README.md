@@ -6,6 +6,13 @@ App de notas con pipeline CI/CD completo usando GitHub Actions. Parte de la
 app de TP06 y le agrega tests (`backend/tests/`) y dos workflows:
 `cicd.yml` (lint → test → build/push → deploy) y `pr-check.yml`.
 
+## Requisitos
+
+- Docker y Docker Compose (para levantarla local).
+- Python 3.12 (si querés correr `pytest`/`flake8` sin Docker).
+- Un repositorio en GitHub con los 5 secrets cargados, para que el
+  pipeline corra completo (ver "4 Secrets requeridos" más abajo).
+
 ## Levantarla local (sin GitHub)
 
 ```bash
@@ -25,21 +32,29 @@ curl http://localhost/health
 
 ## 4 Secrets requeridos
 
-    • DOCKERHUB_USERNAME, 
-    • DOCKERHUB_TOKEN DEPLOY_HOST, 
-    • DEPLOY_USER, 
-    • DEPLOY_SSH_KEY
+```
+DOCKERHUB_USERNAME
+DOCKERHUB_TOKEN
+DEPLOY_HOST
+DEPLOY_USER
+DEPLOY_SSH_KEY
+```
 
 ## Correr tests localmente
 
-Ejecutar en bash
+```bash
 cd backend
 pip install -r requirements.txt
 pytest tests/ -v --cov=. --cov-report=term-missing
-Estructura del pipeline
+```
+
+### Estructura del pipeline
+
+```
 feature/* → lint → test
 develop   → lint → test → build → push
 main      → lint → test → build → push → deploy
+```
 
 ## Notas
 
@@ -51,4 +66,3 @@ main      → lint → test → build → push → deploy
 - El pipeline corre `flake8` con `--max-line-length=100` sobre `backend/`:
   el código del backend ya está formateado para pasar esa regla (imports
   en líneas separadas, dos líneas en blanco antes de `if __name__`).
-

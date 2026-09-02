@@ -7,9 +7,11 @@ con Ingress y HPA opcional.
 
 - Un cluster de Kubernetes con Ingress Controller instalado:
 
+```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.service.type=NodePort --set controller.service.nodePorts.http=30080
+```
 
 - Las imágenes `backend`/`frontend` publicadas en Docker Hub (igual que
   en TP09): reemplazar `TU_USUARIO` en `values.yaml` por tu usuario real
@@ -17,25 +19,27 @@ helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx
 
 ## Estructura del Chart
 
-devops-portfolio/ 
-├── Chart.yaml # metadata del chart 
-├── values.yaml # valores por defecto 
-├── values-dev.yaml # override para desarrollo 
-├── values-prod.yaml # override para producción 
-└── templates/ 
-├── _helpers.tpl # funciones reutilizables 
-├── namespace.yaml 
-├── secret.yaml 
-├── configmap.yaml 
-├── postgres.yaml # PVC + Deployment + Service 
-├── backend.yaml # Deployment + HPA + Service 
-├── frontend.yaml # Deployment + Service 
-├── ingress.yaml # Ingress con rutas 
-└── NOTES.txt # mensaje post-instalación
+```
+devops-portfolio/
+├── Chart.yaml           # metadata del chart
+├── values.yaml           # valores por defecto
+├── values-dev.yaml       # override para desarrollo
+├── values-prod.yaml      # override para producción
+└── templates/
+    ├── _helpers.tpl       # funciones reutilizables
+    ├── namespace.yaml
+    ├── secret.yaml
+    ├── configmap.yaml
+    ├── postgres.yaml      # PVC + Deployment + Service
+    ├── backend.yaml       # Deployment + HPA + Service
+    ├── frontend.yaml      # Deployment + Service
+    ├── ingress.yaml       # Ingress con rutas
+    └── NOTES.txt          # mensaje post-instalación
+```
 
 ## Comandos principales
 
-Ejecutar en bash
+```bash
 # Validar el chart
 helm lint devops-portfolio/
 
@@ -53,14 +57,22 @@ helm rollback mi-app 1
 
 # Desinstalar
 helm uninstall mi-app
-Ingress: routing por paths
-Path	Servicio destino
-/	frontend-service :80
-/api/*	backend-service :5000
-/health	backend-service :5000
-Multi-entorno
+```
+
+## Ingress: routing por paths
+
+| Path | Servicio destino |
+|---|---|
+| `/` | frontend-service :80 |
+| `/api/*` | backend-service :5000 |
+| `/health` | backend-service :5000 |
+
+## Multi-entorno
+
+```bash
 helm install mi-app devops-portfolio/ --values values-dev.yaml   # dev
 helm install mi-app devops-portfolio/ --values values-prod.yaml  # prod
+```
 
 ## Notas
 
@@ -75,4 +87,6 @@ helm install mi-app devops-portfolio/ --values values-prod.yaml  # prod
   `devops-portfolio.dev` (o `.local`, según el `values.yaml` que uses) a
   la IP del nodo:
 
+```bash
 echo "$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}') devops-portfolio.dev" | sudo tee -a /etc/hosts
+```
